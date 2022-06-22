@@ -14,6 +14,8 @@ function _init()
 	pmb,mb=0,0
 	btn_c=nil
 	
+	sum=0
+	
 
 	--create buttons
 	buttons={}
@@ -35,7 +37,7 @@ function _update()
 	if click then
 		btn_c=btn_closest()
 		if btn_c.hover then
-			print(":)")
+			perform_btn_click(btn_c)
 		else
 			btn_c=nil
 		end
@@ -54,6 +56,7 @@ function _update()
 	debug[2]=my
 	local a,b=btn_xy(buttons[1])
 	debug[3]=dist(a,b,mx,my)
+	debug[4]=tostr(sum,2)
 end
 
 function _draw()
@@ -64,11 +67,7 @@ function _draw()
 	
 	--draw buttons
 	for b in all(buttons) do
-		local x,y=btn_xy(b)
-		local c=btn_color(b)
-		if(b==btn_c) y+=1
-		circfill(x,y,5,c)
-		print(b.y,x-1,y-2,0)
+		draw_button(b)
 	end 
 	
 	--draw mouse
@@ -101,6 +100,10 @@ function upd_btn_hover()
 		end
 	end	
 end
+
+function perform_btn_click(b)
+	sum += b.y*bspot(b.x)
+end
 -->8
 --graphics
 
@@ -119,6 +122,14 @@ function draw_outline()
 	--margins
 	rect2(0,28,128,4,14)
 end
+
+function draw_button(b)
+	local x,y=btn_xy(b)
+	local c=btn_color(b)
+	if(b==btn_c) y+=1
+	circfill(x,y,5,c)
+	print(b.y,x-1,y-2,0)
+end
 -->8
 --helpers
 
@@ -129,7 +140,7 @@ end
 
 --return button center based on id
 function btn_xy(b)
-	return 128-b.x*13, 123-b.y*13
+	return 115-b.x*13, 123-b.y*13
 end
 
 --return color of a button
@@ -137,7 +148,7 @@ end
 --2*position+hover
 function btn_color(b)
 	local colors={[0]=11,3,10,9}
-	local p=(b.x<3 or b.x==6) and 2 or 0 
+	local p=(b.x<2 or b.x==5) and 2 or 0 
 	return colors[tonum(b.hover)+p]
 end
 
@@ -147,7 +158,6 @@ function btn_closest()
 	for b in all(buttons) do
 		local x,y=btn_xy(b)
 		d=dist(x,y,mx,my)
-		log(d)
 		if d<bd then
 			bd=d
 			best=b
@@ -163,6 +173,16 @@ function px_grid()
 			rect(x*8,y*8,x*8+7,y*8+7,(x+y)%2==0 and 2 or 13)
 		end
 	end
+end
+
+--bit-shifted power of ten 
+function bspot(x)
+	local r=1>>16
+	for i=0,x-1 do
+		r*=10
+	end
+	log(r)
+	return r
 end
 
 --literally dist
