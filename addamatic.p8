@@ -3,10 +3,15 @@ version 35
 __lua__
 --the add-a-matic?
 --bY kULPAS
+ver="V0.03"
 
 function _init()
+	--metainit
 	poke(0x5f2d, 1)
+	log("start log",true)
+	debug={}
 
+	--create buttons
 	buttons={}
 	for i=0,39 do
 		b={x=i%8+1,y=i\8+1}
@@ -18,58 +23,94 @@ function _update()
 	--mouse pos
 	mx=stat(32)
 	my=stat(33)
+	buttons[1].h = true
 	
+	upd_btn_hover()
+	
+	--debug
+	debug[1]=mx
+	debug[2]=my
+	local a,b=btn_xy(buttons[1])
+	debug[3]=dist(a,b,mx,my)
 end
 
 function _draw()
 	cls(5)
 	
-	for i=0,128 do
-		--if(i%2==0)line(0,i,127,i,10)
-	end
-	
-	--logo
-	rect2(0,0,128,28)
-	rect2(2,2,124,24,10)
-	
-	--number line
-	rect2(0,32,128,16,6)
-	
-	--main body
-	rect2(6,52,116,65,15)
-	--footer
-	rect2(0,121,128,7,6)	
-	print("V0.02",108,122,5)
-	
-	--margins
-	rect2(0,28,128,4,14)
-	
-	
- --debug_grid()
+	draw_outline()	
+ --px_grid()
 	
 	--draw buttons
 	for b in all(buttons) do
-		local x,y = btn_xy(b)
-		circfill(x,y,5,11)
+		local x,y=btn_xy(b)
+		local c=btn_color(b)
+		circfill(x,y,5,c)
+		print(b.y,x-1,y-2,0)
 	end 
 	
 	--draw mouse
 	palt(0x4000)
-	print(mx,15,15,8)
-	print(my,28,15,9)
 	spr(15,mx-3,my,1,2)
 	palt()
 	
-	
+	print_debug()
+end
+-->8
+--logic
+
+--checks if mouse over button
+function upd_btn_hover()
+	for b in all(buttons) do
+		local x,y = btn_xy(b)
+		if dist(x,y,mx,my)<=29 then
+			b.hover = true
+		else
+			b.hover = false
+		end
+	end	
+end
+-->8
+--graphics
+
+--draw all the placeholders
+function draw_outline() 
+	--logo
+	rect2(0,0,128,28)
+	rect2(2,2,124,24,10)
+	--number line
+	rect2(0,32,128,16,6)
+	--main body
+	rect2(6,52,116,65,15)
+	--footer
+	rect2(0,121,128,7,6)	
+	print(ver,108,122,5)
+	--margins
+	rect2(0,28,128,4,14)
 end
 -->8
 --helpers
 
+--rectfill with width height
+function rect2(x,y,w,h,c)
+	rectfill(x,y,x+w-1,y+h-1,c)
+end
+
+--return button center based on id
 function btn_xy(b)
 	return 128-b.x*13, 123-b.y*13
 end
 
-function debug_grid()
+--return color of a button
+--using a bitmap:
+--2*position+hover
+function btn_color(b)
+	local colors={[0]=11,3,10,9}
+	local p=(b.x<3 or b.x==6) and 2 or 0 
+	return colors[tonum(b.hover)+p]
+end
+
+--8x8 grid for pixel counting
+function px_grid()
 	for x=0,31 do
 		for y=0,31 do
 			rect(x*8,y*8,x*8+7,y*8+7,(x+y)%2==0 and 2 or 13)
@@ -77,9 +118,26 @@ function debug_grid()
 	end
 end
 
-function rect2(x,y,w,h,c)
-	rectfill(x,y,x+w-1,y+h-1,c)
+--literally dist
+function dist(x1,y1,x2,y2) 
+	local dx,dy = x2-x1, y2-y1
+	return dx*dx+dy*dy
 end
+
+--logging
+function log(t,over)
+	printh(t,"log",over or false)
+end
+
+--prints debug table in top left
+function print_debug()
+	local y=8
+	for txt in all(debug) do
+		print(txt,5,y,8)
+		y+=6
+	end
+end
+
 __gfx__
 00000000999999999999999900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011101111
 00000000999999999999999900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011070111
