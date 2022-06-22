@@ -28,13 +28,26 @@ function _draw()
 		--if(i%2==0)line(0,i,127,i,10)
 	end
 	
-	--main body
-	rect(10,10,117,117,15)
-	--footer
-	rectfill(0,121,127,127,6)	
-	print("V0.01",108,122,5)
+	--logo
+	rect2(0,0,128,28)
+	rect2(2,2,124,24,10)
 	
- debug_grid()
+	--number line
+	rect2(0,31,128,16,6)
+	rect2(0,47,128,8,7)
+	
+	--main body
+	rect2(10,56,108,60,15)
+	--footer
+	rect2(0,121,128,7,6)	
+	print("V0.02",108,122,5)
+	
+	--margins
+	rect2(0,116,128,5,14)
+	rect2(0,28,128,3,14)
+	
+	
+ --debug_grid()
 	
 	--draw buttons
 	for b in all(buttons) do
@@ -63,6 +76,10 @@ function debug_grid()
 			rect(x*8,y*8,x*8+7,y*8+7,(x+y)%2==0 and 2 or 13)
 		end
 	end
+end
+
+function rect2(x,y,w,h,c)
+	rectfill(x,y,x+w-1,y+h-1,c)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011101111
