@@ -3,7 +3,7 @@ version 35
 __lua__
 --the add-a-matic?
 --bY kULPAS
-ver="V0.04"
+ver="V0.05"
 
 function _init()
 	--metainit
@@ -14,9 +14,16 @@ function _init()
 	pmb,mb=0,0
 	btn_c=nil
 	
+	dial_pos={}
+	dial_tgt={}
+	
 	sum=0
 	
-
+	set_dial_tgt()
+	for i=0,8 do
+		dial_post[i]=dial_tgt[i]
+	end
+	
 	--create buttons
 	buttons={}
 	for i=0,39 do
@@ -48,9 +55,6 @@ function _update()
 		btn_c=nil
 	end
 	
-	
- 
-	
 	--debug
 	debug[1]=mx
 	debug[2]=my
@@ -62,6 +66,10 @@ end
 function _draw()
 	cls(5)
 	
+	lerp_dial_pos()
+	
+	draw_dials()
+	
 	draw_outline()	
  --px_grid()
 	
@@ -69,6 +77,10 @@ function _draw()
 	for b in all(buttons) do
 		draw_button(b)
 	end 
+	
+	for i=0,8 do
+		print(dial_tgt[i],30,40+i*6,12)
+	end
 	
 	--draw mouse
 	palt(0x4000)
@@ -103,6 +115,9 @@ end
 
 function perform_btn_click(b)
 	sum += b.y*bspot(b.x)
+	sum%=tonum("1000000000",2)
+	
+	set_dial_tgt()
 end
 -->8
 --graphics
@@ -112,15 +127,14 @@ function draw_outline()
 	--logo
 	rect2(0,0,128,28)
 	rect2(2,2,124,24,10)
-	--number line
-	rect2(0,32,128,16,6)
+
 	--main body
 	rect2(6,52,116,65,15)
 	--footer
 	rect2(0,121,128,7,6)	
 	print(ver,108,122,5)
 	--margins
-	rect2(0,28,128,4,14)
+	rect2(0,28,128,5,14)
 end
 
 function draw_button(b)
@@ -129,6 +143,51 @@ function draw_button(b)
 	if(b==btn_c) y+=1
 	circfill(x,y,5,c)
 	print(b.y,x-1,y-2,0)
+end
+
+function draw_dial(x,y)
+	rect2(x,y,5,61,7)
+	for i=0,9 do
+		print(i,x+1,y+1+(i*6),0)
+	end
+end
+
+function draw_dials()
+	for i=0,8 do
+		draw_dial(113-i*13,dial_tgt[i])
+	end
+	
+	--frame
+	rect2(4,34,120,3,6)
+	rect2(4,44,120,3,6)
+	for i=0,7 do
+		rect2(14+i*13,37,8,7,6)
+		if(i<2)rect2(3+i*115,37,6,7,6)
+	end
+	rect(3,33,124,47,0)
+end
+
+--sets the target position of all dials
+function set_dial_tgt()
+	local s=sum
+	for i=0,8 do
+		local a=s%(10>>16)
+		a<<=16
+		s/=10
+		
+		dial_tgt[i]=37-a*6
+	end
+end
+
+--moves all dials in target direction
+function set_dial_pos()
+	for i=0,8 do
+		if dial_pos[i]>dial_tgt[i] then
+			dial_pos[i]-=1
+		else if dial_pos[i]<dial_tgt[i] then
+			dial_post[i]+=1
+		end
+	end
 end
 -->8
 --helpers
@@ -181,7 +240,6 @@ function bspot(x)
 	for i=0,x-1 do
 		r*=10
 	end
-	log(r)
 	return r
 end
 
