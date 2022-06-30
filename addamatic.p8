@@ -53,7 +53,7 @@ function _update()
 	
 	if bar_y>101 then
 		sum=0
-		set_dial_tgt()
+		set_dial_tgt(true)
 	end
 
 	--hover on buttons and bar
@@ -129,6 +129,7 @@ function upd_btn_hover()
 	end
 end
 
+--check if any button was clicked on
 function upd_btn_click()
 	btn_c=btn_closest()
 	if btn_c.h then
@@ -138,6 +139,7 @@ function upd_btn_click()
 	end
 end
 
+--add the value of the button to the sum
 function perform_btn_click(b)
 	sum += b.y*bspot(b.x)
 	sum%=tonum("1000000000",2)
@@ -165,6 +167,7 @@ function draw_outline()
 	rect2(0,28,128,5,14)
 end
 
+--draws a button from the button obj
 function draw_button(b)
 	local x,y=btn_xy(b)
 	local c=btn_color(b)
@@ -173,13 +176,15 @@ function draw_button(b)
 	print(b.y,x-1,y-2,0)
 end
 
+--draws a single number dial "strip"
 function draw_dial(x,y)
-	rect2(x,y,5,61,7)
-	for i=0,9 do
-		print(i,x+1,y+1+(i*6),0)
+	rect2(x,y,5,67,7)
+	for i=0,10 do
+		print(i%10,x+1,y+1+(i*6),0)
 	end
 end
 
+--draws all the number "strips" in correct positions
 function draw_dials()
 	for i=0,8 do
 		draw_dial(113-i*13,dial_pos[i])
@@ -199,19 +204,24 @@ function draw_dials()
 	rect(3,33,124,47,0)
 end
 
+--draws the reset bar
 function draw_bar(x,y)
 	rect2(x,y,6,12,0)
 	rect2(x+1,y+1,4,10,8)
 end
 
 --sets the target position of all dials
-function set_dial_tgt()
+function set_dial_tgt(backward)
 	local s=sum
 	for i=0,8 do
 		local a=s%(10>>16)
 		a<<=16
 		s/=10
 
+		--bad wrap fix part 1
+		--sometimes sets target to 2nd zero
+		if(not backward and a==0)a=10
+		
 		dial_tgt[i]=37-a*6
 	end
 end
@@ -223,9 +233,18 @@ function set_dial_pos()
 		if abs(tgt-pos)<=spd then
 			dial_pos[i]=tgt
 		elseif pos>tgt then
-			dial_pos[i]-=1.5
+			dial_pos[i]-=spd
 		elseif pos<tgt then
-			dial_pos[i]+=1.5
+			dial_pos[i]+=spd
+		end
+		
+		
+		
+		--bad wrap fix part 2
+		--teleports to zero 1 when at zero 2
+		--also overrides zero 1 to zero 2 jumps
+		if tgt==-23 and (pos==37 or pos==-23) then
+			dial_tgt[i],dial_pos[i]=37,37
 		end
 	end
 end
